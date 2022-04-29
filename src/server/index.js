@@ -2,14 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import {MongoClient} from "mongodb";
-import Joi from 'joi';
 import chalk from 'chalk';
 
 dotenv.config();
 
 
 const app = express().use(express.json()).use(cors());
-
 
 const mongoClient = new MongoClient(process.env.Mongo_URL);
 let db;
@@ -38,6 +36,50 @@ app.post("/participants", async(req, res)=>{
             await db.collection("messages").insertOne({from:name.name, to: "todos", text: 'entra na sala...', type: 'status', time: time.toTimeString().split(" ")[0]});
             res.sendStatus(201);
         }
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
+
+app.post("/messages", async(req, res)=>{
+    const {to, text, type} = req.body;
+    const from = req.header("from");
+    const time = new Date();
+    try{
+        await db.collection("messages").insertOne({from, to, text, type, time: time.toTimeString().split(" ")[0]});
+        console.log(chalk.bold.green(`Mensagem enviada para ${to}`));
+        res.sendStatus(201);
+    }catch(err){
+        res.status(500).send(err);
+    }
+});
+
+
+app.get("/participants", async(req, res)=>{
+    try{
+        const users = await db.collection("participants").find({}).toArray();
+        res.send(users);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
+
+app.get("/messages", async(req, res)=>{
+    const limit = req.query.limit;
+    console.log(chalk.bold.blue(`Limite de ${limit}`));
+    try{
+        if(limit){
+            const messages = await db.collection("messages").find({}).limit(parseInt(limit)).sort({$natural:-1}).toArray();
+            res.send(messages);
+        }else{
+            const messages = await db.collection("messages").find({}).sort({$natural:-1}).toArray();
+            res.send(messages);
+        }
+        
     }
     catch(err){
         res.status(500).send(err);

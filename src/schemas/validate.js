@@ -1,5 +1,8 @@
 import Joi from 'joi';
 
-module.exports={
+const userSchema={
     name: Joi.string().required(),
+};
+module.exports = {
+    userSchema
 }

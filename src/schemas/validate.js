@@ -1,8 +1,9 @@
 import Joi from 'joi';
 
-const userSchema={
+const userSchema = Joi.object({
     name: Joi.string().required(),
-};
-module.exports = {
-    userSchema
-}
+    // to: Joi.string().min(1).required(),
+});
+
+
+export default userSchema;
